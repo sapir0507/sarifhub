@@ -115,6 +115,21 @@ dotnet user-secrets set "ConnectionStrings:SarifHub" "Host=localhost;Port=5432;D
 
 Alternatively set the environment variable `ConnectionStrings__SarifHub`.
 
+<details>
+<summary><b>Without Docker</b> (for example on Windows with the PostgreSQL 17 installer)</summary>
+
+Install PostgreSQL 17 (the EDB installer includes `pg_trgm`), then replace step 1 with the commands below and
+continue with step 2 in the same PowerShell window. `psql` asks for the `postgres` password you chose in the installer.
+If the installer used another port than 5432, change `Port=` in step 2.
+
+```powershell
+cd backend
+$DB_PASSWORD = [guid]::NewGuid().ToString('N')
+& "C:\Program Files\PostgreSQL\17\bin\psql.exe" -U postgres -h localhost -c "CREATE ROLE sarifhub LOGIN CREATEDB PASSWORD '$DB_PASSWORD';" -c "CREATE DATABASE sarifhub OWNER sarifhub;"
+```
+
+</details>
+
 **3. Build, then create the schema** with the EF Core migration (`dotnet-ef` is a local tool pinned in
 `.config/dotnet-tools.json`; it needs a restored, built solution):
 

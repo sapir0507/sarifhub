@@ -43,8 +43,11 @@ From a fresh copy of the repository (no `bin/`, `obj/`, user secrets or database
 were run as written, command by command. This found and fixed one problem — `dotnet ef` needs a built solution in a
 fresh clone, so step 3 now runs `dotnet build` first.
 
-Not executed in this environment: the `docker run postgres:17` command (no container registry access; the same
-role, database and password were created on a PostgreSQL 17.10 server instead) and the PowerShell password line.
+Also verified on Windows (.NET SDK 10.0.401, PostgreSQL 17 from the EDB installer, PowerShell): `dotnet build`,
+the *Without Docker* steps, `dotnet ef database update`, the seed, and `GET /api/projects` returning the four projects.
+
+Not executed: the `docker run postgres:17` command (the environments used had no working Docker; the same role,
+database and password were created on PostgreSQL 17 directly).
 
 ## Repository
 
