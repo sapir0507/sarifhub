@@ -9,7 +9,8 @@ import type { Severity } from '../types';
  * Phase 4 replaces this with generated, schema-valid SARIF fixtures under tests/TestData/Sarif.
  */
 export interface RuleTemplate {
-  tool: 'CodeQL' | 'Semgrep';
+  /** 'CodeQL' | 'Semgrep' in the demo packs; any tool name for uploaded SARIF. */
+  tool: string;
   ruleId: string;
   name: string;
   severity: Severity;

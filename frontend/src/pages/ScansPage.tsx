@@ -6,6 +6,7 @@ import { tokens } from '../app/theme';
 import { PageHeader } from '../components/AppShell';
 import { GateBadge, Ltr } from '../components/chips';
 import { QueryState } from '../components/QueryState';
+import { UploadScanButton } from '../components/UploadScanDialog';
 
 export function ScansPage() {
   const { projectId = '' } = useParams();
@@ -14,7 +15,7 @@ export function ScansPage() {
   const num = { fontVariantNumeric: 'tabular-nums' } as const;
   return (
     <>
-      <PageHeader title={t.scan.scansTitle} />
+      <PageHeader title={t.scan.scansTitle} actions={<UploadScanButton projectId={projectId} />} />
       <QueryState query={scans}>
         {(data) =>
           data.length === 0 ? (

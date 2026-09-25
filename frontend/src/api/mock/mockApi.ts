@@ -16,6 +16,7 @@ import {
   type TrendPoint,
   type TriageRequest,
   type TriageStatus,
+  type UploadScanRequest,
 } from '../types';
 import {
   createWorld,
@@ -27,7 +28,9 @@ import {
   type MockProject,
   type MockScan,
 } from './mockData';
-import { canTriage } from '../../domain/permissions';
+import { typescriptRules, type RuleTemplate } from './rulePacks';
+import { importSarif } from './sarifImport';
+import { canTriage, canUploadScan } from '../../domain/permissions';
 
 const DAY = 86_400_000;
 const lifecycleRank: Record<LifecycleStatus, number> = { New: 4, Reopened: 3, Existing: 2, Resolved: 1 };
@@ -61,6 +64,11 @@ const delay = <T,>(value: T): Promise<T> =>
   new Promise((resolve) => setTimeout(() => resolve(structuredClone(value)), 120 + Math.random() * 220));
 
 const notFound = (what: string) => new ApiError({ status: 404, title: `${what} not found` });
+
+const randomHex = (length: number) => Array.from({ length }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+const randomItem = <T,>(items: readonly T[]): T => items[Math.floor(Math.random() * items.length)];
+/** Versions the demo rule packs report; simulated scans reuse them. */
+const demoToolVersions: Record<string, string> = { CodeQL: '2.23.1', Semgrep: '1.139.0' };
 
 export function createMockApi(): SarifHubApi {
   const now = Date.now();
@@ -311,6 +319,91 @@ export function createMockApi(): SarifHubApi {
     async getScans(projectId) {
       const p = project(projectId);
       return delay(p.scans.map((s) => scanSummary(p, s)).reverse());
+    },
+
+    /**
+     * The scan diff: each uploaded result is matched to an existing logical finding
+     * (same tool + rule + file), otherwise it becomes a new finding. Matched findings are
+     * Existing (present in the previous scan) or Reopened; findings missing from the upload are Resolved.
+     */
+    async uploadScan(projectId, request: UploadScanRequest) {
+      const p = project(projectId);
+      if (!canUploadScan(world.roles[projectId])) {
+        throw new ApiError({ status: 403, title: 'Your project role cannot upload scans.' });
+      }
+      const previous = latestNumber(p);
+      const number = previous + 1;
+      const inPrevious = new Set(p.findings.filter((f) => f.occurrences.at(-1)?.scanNumber === previous).map((f) => f.id));
+      const present = new Set<string>();
+      const lines = new Map<string, number>();
+      const nextId = () => `${p.key}-f${String(p.findings.length + 1).padStart(4, '0')}`;
+      const addFinding = (rule: RuleTemplate, filePath: string, fingerprint: string): MockFinding => {
+        const f: MockFinding = { id: nextId(), projectId: p.id, rule, filePath, fingerprint, occurrences: [], resolvedInScans: [], triageHistory: [] };
+        p.findings.push(f);
+        return f;
+      };
+
+      let tools: MockScan['tools'];
+      let commitSha: string | null = null;
+      let branch = request.branch.trim();
+
+      if (request.sarif !== null) {
+        const imported = importSarif(request.sarif);
+        const key = (tool: string, ruleId: string, file: string) => `${tool}\u0000${ruleId}\u0000${file}`;
+        for (const r of imported.results) {
+          const k = key(r.rule.tool, r.rule.ruleId, r.filePath);
+          const f =
+            p.findings.find((x) => !present.has(x.id) && key(x.rule.tool, x.rule.ruleId, x.filePath) === k) ??
+            addFinding(r.rule, r.filePath, `v1:${r.fingerprint ?? randomHex(64)}`);
+          present.add(f.id);
+          lines.set(f.id, r.line);
+        }
+        tools = imported.tools;
+        commitSha = imported.commitSha;
+        branch ||= imported.branch ?? '';
+      } else {
+        // Demo: most open findings stay, ~10% get fixed, a few old ones regress, 1–3 are introduced.
+        for (const f of p.findings) {
+          if (inPrevious.has(f.id) ? Math.random() > 0.1 : Math.random() < 0.04) present.add(f.id);
+        }
+        const rules = [...new Set(p.findings.map((f) => f.rule))];
+        const pool = rules.length ? rules : typescriptRules;
+        const introduced = previous === 0 ? 6 + Math.floor(Math.random() * 6) : 1 + Math.floor(Math.random() * 3);
+        for (let i = 0; i < introduced; i++) {
+          const rule = randomItem(pool);
+          const f = addFinding(rule, randomItem(rule.files), `v1:${randomHex(64)}`);
+          present.add(f.id);
+          lines.set(f.id, 20 + Math.floor(Math.random() * 380));
+        }
+        const names = [...new Set(p.findings.filter((f) => present.has(f.id)).map((f) => f.rule.tool))].sort();
+        tools = names.map((name) => ({ name, version: demoToolVersions[name] ?? '–' }));
+      }
+
+      for (const f of p.findings) {
+        if (present.has(f.id)) {
+          const last = f.occurrences.at(-1);
+          f.occurrences.push({
+            scanNumber: number,
+            line: lines.get(f.id) ?? last?.line ?? 1,
+            lifecycle: !last ? 'New' : inPrevious.has(f.id) ? 'Existing' : 'Reopened',
+          });
+        } else if (inPrevious.has(f.id)) {
+          f.resolvedInScans.push(number);
+        }
+      }
+
+      const scan: MockScan = {
+        id: `${p.key}-s${number}`,
+        number,
+        projectId: p.id,
+        branch: branch || p.defaultBranch,
+        commitSha: commitSha && /^[0-9a-f]{7,64}$/i.test(commitSha) ? commitSha.toLowerCase() : randomHex(40),
+        tools,
+        uploadedAt: new Date().toISOString(),
+        uploadedBy: 'Demo User',
+      };
+      p.scans.push(scan);
+      return delay(scanSummary(p, scan));
     },
 
     async getScan(projectId, scanNumber) {

@@ -25,6 +25,11 @@ export function canTriageAtAll(role: ProjectRole): boolean {
   return triagePermissions[role].length > 0;
 }
 
+/** Manual upload from the UI is Developer+ (docs/phase2/docs/architecture/api.md, authorization matrix). */
+export function canUploadScan(role: ProjectRole): boolean {
+  return role !== 'Viewer';
+}
+
 export function canManageProject(role: ProjectRole): boolean {
   return role === 'Admin';
 }

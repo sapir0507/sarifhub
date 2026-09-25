@@ -7,8 +7,11 @@ import { tokens } from '../app/theme';
 import { PageHeader } from '../components/AppShell';
 import { GateBadge, Ltr } from '../components/chips';
 import { QueryState } from '../components/QueryState';
+import { UploadScanButton, UploadScanIconButton } from '../components/UploadScanDialog';
 
 const order: Severity[] = ['Critical', 'High', 'Medium', 'Low'];
+/** Screen-reader-only header for the actions column. */
+const visuallyHidden = { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap' } as const;
 
 function SeverityCountsInline({ counts }: { counts: SeverityCounts }) {
   const { t } = useLocale();
@@ -34,7 +37,7 @@ export function ProjectsPage() {
   const projects = useProjects();
   return (
     <>
-      <PageHeader title={t.projects.title} />
+      <PageHeader title={t.projects.title} actions={<UploadScanButton />} />
       <QueryState query={projects}>
         {(data) => (
           <TableContainer component={Paper}>
@@ -46,6 +49,7 @@ export function ProjectsPage() {
                   <TableCell>{t.projects.lastScan}</TableCell>
                   <TableCell>{t.projects.active}</TableCell>
                   <TableCell>{t.projects.status}</TableCell>
+                  <TableCell padding="checkbox"><Box component="span" sx={visuallyHidden}>{t.upload.button}</Box></TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -74,6 +78,7 @@ export function ProjectsPage() {
                     </TableCell>
                     <TableCell><SeverityCountsInline counts={p.activeBySeverity} /></TableCell>
                     <TableCell>{p.lastScan ? <GateBadge result={p.lastScan.gate.result} /> : '–'}</TableCell>
+                    <TableCell padding="checkbox"><UploadScanIconButton projectId={p.id} projectName={p.name} /></TableCell>
                   </TableRow>
                 ))}
               </TableBody>

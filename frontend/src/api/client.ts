@@ -11,6 +11,7 @@ import type {
   ScanSummary,
   TrendPoint,
   TriageRequest,
+  UploadScanRequest,
 } from './types';
 import { createMockApi } from './mock/mockApi';
 
@@ -33,6 +34,8 @@ export interface SarifHubApi {
   triageFinding(projectId: string, findingId: string, request: TriageRequest): Promise<FindingDetail>;
   /** GET /api/projects/{projectId}/scans */
   getScans(projectId: string): Promise<ScanSummary[]>;
+  /** POST /api/projects/{projectId}/scans — upload a SARIF file; returns the new scan with its diff counts */
+  uploadScan(projectId: string, request: UploadScanRequest): Promise<ScanSummary>;
   /** GET /api/projects/{projectId}/scans/{scanNumber} */
   getScan(projectId: string, scanNumber: number): Promise<ScanDetail>;
   /** GET /api/projects/{projectId}/trends */

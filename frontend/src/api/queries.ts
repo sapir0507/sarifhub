@@ -1,6 +1,6 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from './client';
-import type { FindingsQuery, ProjectRole, TriageRequest } from './types';
+import type { FindingsQuery, ProjectRole, TriageRequest, UploadScanRequest } from './types';
 
 /**
  * Server state lives in TanStack Query, not in component state.
@@ -53,6 +53,18 @@ export function useTriage(projectId: string, findingId: string) {
     onSuccess: (updated) => {
       client.setQueryData(queryKeys.finding(projectId, findingId), updated);
       // Counts and lists depend on triage: refresh everything under this project.
+      void client.invalidateQueries({ queryKey: queryKeys.project(projectId) });
+      void client.invalidateQueries({ queryKey: queryKeys.projects, exact: true });
+    },
+  });
+}
+
+export function useUploadScan(projectId: string) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (request: UploadScanRequest) => api.uploadScan(projectId, request),
+    onSuccess: () => {
+      // A new scan changes every count, list and trend of the project, and its row on the projects page.
       void client.invalidateQueries({ queryKey: queryKeys.project(projectId) });
       void client.invalidateQueries({ queryKey: queryKeys.projects, exact: true });
     },

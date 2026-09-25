@@ -11,6 +11,7 @@ import { GateBadge, Ltr } from '../components/chips';
 import { openFindingsPath } from '../domain/links';
 import { QueryState } from '../components/QueryState';
 import { QualityGatePanel } from '../components/QualityGatePanel';
+import { UploadScanButton } from '../components/UploadScanDialog';
 import { SeverityRibbon } from '../components/SeverityRibbon';
 import { SeverityTrendChart } from '../components/charts/charts';
 
@@ -60,6 +61,7 @@ function DashboardBody({ projectId, d }: { projectId: string; d: ProjectDashboar
           <UploadFileOutlined sx={{ fontSize: 40, color: tokens.muted, mb: 1 }} />
           <Typography variant="h2" sx={{ mb: 1 }}>{t.dashboard.emptyTitle}</Typography>
           <Typography color="text.secondary">{t.dashboard.emptyBody}</Typography>
+          <Box sx={{ mt: 2.5 }}><UploadScanButton projectId={projectId} /></Box>
         </Paper>
       </>
     );
@@ -74,7 +76,12 @@ function DashboardBody({ projectId, d }: { projectId: string; d: ProjectDashboar
             {t.common.scan(scan.number)}, {formatDateTime(scan.uploadedAt)}, <Ltr mono>{scan.commitSha.slice(0, 7)}</Ltr>
           </>
         }
-        actions={<Button variant="contained" component={RouterLink} to={openFindingsPath(projectId)}>{t.nav.findings}</Button>}
+        actions={
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            <UploadScanButton projectId={projectId} variant="outlined" />
+            <Button variant="contained" component={RouterLink} to={openFindingsPath(projectId)}>{t.nav.findings}</Button>
+          </Box>
+        }
       />
 
       <Grid container spacing={2.5}>

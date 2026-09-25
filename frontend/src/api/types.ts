@@ -198,6 +198,17 @@ export interface ScanDetail extends ScanSummary {
   bySeverity: SeverityCounts;
 }
 
+/**
+ * Body of POST /api/projects/{projectId}/scans.
+ * The real API takes the SARIF file as multipart/form-data; the mock takes its text.
+ */
+export interface UploadScanRequest {
+  /** SARIF 2.1.0 document as text. null = demo only: let the mock simulate a CI scan. */
+  sarif: string | null;
+  /** Branch the scan ran on. Empty = the SARIF's versionControlProvenance, then the project's default branch. */
+  branch: string;
+}
+
 export interface TriageRequest {
   status: TriageStatus;
   reason: string;
