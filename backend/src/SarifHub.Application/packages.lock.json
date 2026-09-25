@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "dependencies": {
+    "net10.0": {
+      "sarifhub.domain": {
+        "type": "Project"
+      },
+      "sarifhub.sarif": {
+        "type": "Project",
+        "dependencies": {
+          "SarifHub.Domain": "[1.0.0, )"
+        }
+      }
+    }
+  }
+}

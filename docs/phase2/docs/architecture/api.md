@@ -77,7 +77,7 @@ Registration is not public in v1: users are created by the seed (demo) or by an 
 | Method | Path | Notes |
 |---|---|---|
 | GET | `/projects/{projectId}/dashboard` | Shape: `ProjectDashboard` in `frontend/src/api/types.ts` |
-| GET | `/projects/{projectId}/scans` | Paged, newest first |
+| GET | `/projects/{projectId}/scans` | Newest first. Returns the whole list (`ScanSummary[]`, as in `types.ts`): a project has tens to hundreds of scans; paging is added if that changes |
 | GET | `/projects/{projectId}/scans/{number}` | Diff counts, severity counts, tools, stored gate evaluation |
 | POST | `/projects/{projectId}/scans` | Developer+. Same pipeline as CI upload, for manual uploads from the UI |
 | GET | `/projects/{projectId}/trends` | One point per scan, from scan snapshots |

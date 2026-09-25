@@ -21,20 +21,23 @@ SarifHub has two kinds of clients with different trust models:
 ## 2. Solution structure
 
 ```
-src/
-  SarifHub.Domain          Entities, value objects, domain services. No dependencies.
-  SarifHub.Sarif           SARIF 2.1.0 reading and normalization. Depends on nothing but System.Text.Json.
-  SarifHub.Application     Use cases, authorization checks, ports (interfaces), DTOs.
-  SarifHub.Infrastructure  EF Core DbContext + migrations, Dapper read queries, Identity, JWT, API key hashing, clock.
-  SarifHub.Api             HTTP: Minimal API endpoint groups, auth setup, Problem Details, OpenAPI, rate limiting.
-tools/
-  SarifHub.TestDataGenerator   Writes schema-valid SARIF fixtures (Phase 4)
-tests/
-  SarifHub.UnitTests           Domain + Sarif + Application (no database)
-  SarifHub.IntegrationTests    API → PostgreSQL through Testcontainers
-  TestData/Sarif/              Generated fixtures
-frontend/                      React SPA (Phase 1)
+backend/
+  src/
+    SarifHub.Domain          Entities, value objects, domain services. No dependencies.
+    SarifHub.Sarif           SARIF 2.1.0 reading and normalization. Depends only on Domain and System.Text.Json.
+    SarifHub.Application     Use cases, authorization checks, ports (interfaces), DTOs.
+    SarifHub.Infrastructure  EF Core DbContext + migrations, Dapper read queries, Identity, JWT, API key hashing.
+    SarifHub.Api             HTTP: controllers (one per API area), auth setup, Problem Details, OpenAPI, rate limiting.
+  tools/
+    SarifHub.TestDataGenerator   Writes schema-valid SARIF fixtures (Phase 4)
+  tests/
+    SarifHub.UnitTests           Domain + Sarif + Application (no database)
+    SarifHub.IntegrationTests    API → PostgreSQL through Testcontainers
+    TestData/Sarif/              Generated fixtures
+frontend/                        React SPA (Phase 1)
 ```
+
+Phase 3 created `backend/src` (all five projects); `tools/` and `tests/` arrive in Phases 4 and 8.
 
 ```mermaid
 flowchart TB
@@ -49,8 +52,9 @@ flowchart TB
 
 **Dependency rule:** arrows point inward. Domain and Sarif know nothing about HTTP or the database, which is what
 lets the parser, the fingerprint calculator, the diff engine, the gate evaluator and the triage rules be unit tested
-with plain inputs and outputs. Infrastructure implements interfaces declared in Application (repositories,
-`IClock`, `IApiKeyHasher`, `ITokenService`). Api is the only project that knows about all of them (composition root).
+with plain inputs and outputs. Infrastructure implements interfaces declared in Application (read models,
+`ICurrentUser`, `IApiKeyHasher`, `ITokenService`); time comes from .NET's built-in `TimeProvider`, so no custom
+clock interface is needed. Api is the only project that knows about all of them (composition root).
 
 Why five projects and not one: the separation pays for itself in exactly one place — the ingestion pipeline is
 pure logic that must be tested hard. `SarifHub.Sarif` is separate from Domain because SARIF is an external format:
@@ -138,7 +142,7 @@ Key properties:
 | Choice | Why | Rejected alternative |
 |---|---|---|
 | .NET 10 (LTS) | .NET 8 and 9 reach end of support on 10 Nov 2026; .NET 10 is supported to Nov 2028 | .NET 8: would be out of support weeks after the project is published |
-| Minimal APIs, endpoint groups per feature | Built-in OpenAPI and validation in .NET 10, less ceremony, handlers stay thin | Controllers: fine, but add nothing here |
+| Controllers, one per API area ([ADR 0010](../adr/0010-controllers.md)) | Familiar to the maintainer; routes, response types and OpenAPI metadata of an area stay together; `[ApiController]` validation Problem Details | Minimal APIs: equally capable, planned in Phase 2, replaced in Phase 3 |
 | EF Core 10 + Npgsql | Migrations, change tracking, optimistic concurrency for writes | Dapper-only: hand-written migrations and change tracking |
 | Dapper for read models | Dashboard (one pass with `FILTER`), trends, grid with whitelisted dynamic sort: explicit SQL is clearer and measurable | EF Core LINQ for everything: harder to control the exact SQL for aggregates |
 | ASP.NET Core Identity (core only) + own JWT issuing | Proven password hashing and lockout; no UI scaffolding | Custom password code; external IdP (adds a service to run locally) |
