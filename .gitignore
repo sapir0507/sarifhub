@@ -5,17 +5,29 @@ build/
 coverage/
 bin/
 obj/
+artifacts/
 TestResults/
 *.tsbuildinfo
 
-# Local configuration and secrets — never commit real values; use .env.example files
+# Local configuration and secrets — never commit real values; use .env.example files.
+# The backend reads its connection string from .NET user secrets (stored outside the repository).
 .env
 .env.*
 !.env.example
 !.env.demo
 appsettings.*.local.json
+secrets.json
 *.pfx
+*.p12
 *.key
+*.pem
+
+# Local databases and dumps
+*.db
+*.sqlite
+*.dump
+*.backup
+pgdata/
 
 # IDE and OS
 .vs/
@@ -24,6 +36,7 @@ appsettings.*.local.json
 .idea/
 *.user
 *.suo
+*.DotSettings.user
 .DS_Store
 Thumbs.db
 

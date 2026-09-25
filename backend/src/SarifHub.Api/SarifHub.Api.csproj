@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <!-- HTTP host and composition root: controllers, Problem Details, OpenAPI, CORS, health checks. -->
+  <PropertyGroup>
+    <UserSecretsId>sarifhub-api-3f1c9b2e-6d4a-4f7e-9a51-2b8e0c7d5a14</UserSecretsId>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Scalar.AspNetCore" />
+    <!-- Design-time only: lets `dotnet ef` use this project as the startup project. Not shipped. -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SarifHub.Application\SarifHub.Application.csproj" />
+    <ProjectReference Include="..\SarifHub.Infrastructure\SarifHub.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

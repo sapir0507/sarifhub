@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="global.json" />
+    <File Path="nuget.config" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/SarifHub.Api/SarifHub.Api.csproj" />
+    <Project Path="src/SarifHub.Application/SarifHub.Application.csproj" />
+    <Project Path="src/SarifHub.Domain/SarifHub.Domain.csproj" />
+    <Project Path="src/SarifHub.Infrastructure/SarifHub.Infrastructure.csproj" />
+    <Project Path="src/SarifHub.Sarif/SarifHub.Sarif.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Use cases, read-model contracts (ports) and DTOs. No EF Core, Dapper or ASP.NET Core. -->
+  <ItemGroup>
+    <ProjectReference Include="..\SarifHub.Domain\SarifHub.Domain.csproj" />
+    <ProjectReference Include="..\SarifHub.Sarif\SarifHub.Sarif.csproj" />
+  </ItemGroup>
+</Project>

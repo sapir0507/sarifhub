@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- SARIF 2.1.0 reading and normalization (Phase 4). Depends only on Domain and System.Text.Json. -->
+  <ItemGroup>
+    <ProjectReference Include="..\SarifHub.Domain\SarifHub.Domain.csproj" />
+  </ItemGroup>
+</Project>

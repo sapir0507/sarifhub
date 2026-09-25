@@ -13,3 +13,5 @@ Short records of decisions that shaped SarifHub: the context, the choice, and wh
 | [0007](0007-api-key-hashing.md) | API keys: public prefix + SHA-256 | 2 |
 | [0008](0008-gate-snapshot.md) | Quality gate result is an immutable snapshot | 2 |
 | [0009](0009-false-positive-needs-security-lead.md) | False positive requires SecurityLead | 1 |
+| [0010](0010-controllers.md) | Controllers instead of Minimal APIs | 3 |
+| [0011](0011-development-caller-until-authentication.md) | Development-only caller until authentication exists | 3 |
